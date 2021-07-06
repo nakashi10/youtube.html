@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>youtube</title>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+  <div id="youtube-wrap">
+    <div id="video-background"></div>
+    <div id="video-overlay"></div>
+  </div>
+  <style>
+  body {
+    margin: 0;
+  }
+  #video-background,
+  #video-overlay {
+    position: relative;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+  }
+
+  #video-background {
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  #video-overlay {
+    z-index: 1;
+    background-color: white;
+    display: block;
+  }
+  #youtube-wrap {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+</style>
+<script>
+// YouTube Player APIの読み込み
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+// プレイヤーを埋め込む場所(IDを指定)
+var ytArea = 'video-background';
+var ytID = '';
+var winW = $(window).width();
+var devW = 960;
+if (winW >= devW) {
+  ytID = 'aRNqI-xNDcA';
+  // プレイヤーの埋め込み
+  function onYouTubeIframeAPIReady() {
+    ytPlayer = new YT.Player(ytArea, {
+      videoId: ytID,
+      playerVars: {
+        rel: 0, // 関連動画の非表示
+        controls: 0, // プレイヤーコントロールの非表示
+        iv_load_policy: 3, // アノテーションの非表示
+        wmode: 'transparent'
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+} else {
+  ytID = 'k5obtOZe4ZQ';
+  // プレイヤーの埋め込み
+  function onYouTubeIframeAPIReady() {
+    ytPlayer = new YT.Player(ytArea, {
+      videoId: ytID,
+      playerVars: {
+        rel: 0, // 関連動画の非表示
+        controls: 0, // プレイヤーコントロールの非表示
+        showinfo: 0, // タイトルなどの非表示
+        modestbranding: 1, // YouTubeロゴの非表示
+        iv_load_policy: 3, // アノテーションの非表示
+        wmode: 'transparent',
+        playsinline: 1
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+}
+
+
+// 動画の準備完了後の動作
+function onPlayerReady(e) {
+  ytPlayer.mute();
+  ytPlayer.playVideo();
+  ytPlayer.setPlaybackQuality('default'); // 画質(small・medium・large・hd720・hd1080・highres・default)
+}
+
+// 動画再生中と再生後の動作
+function onPlayerStateChange(e) {
+
+  var ytStatus = e.target.getPlayerState();
+  if (ytStatus == YT.PlayerState.PLAYING) { //再生中
+    $('#video-overlay').fadeOut( "slow" );
+  }
+  if (ytStatus == YT.PlayerState.ENDED) { //再生後
+    ytPlayer.mute();
+    ytPlayer.playVideo();
+  }
+}
+
+// 上下左右に出てくる黒帯を非表示
+var WIN = $(window);
+var WIN_H
+var win_W
+
+function yt_screen_retio(){
+  WIN_H = WIN.height();
+  WIN_W = WIN.width();
+  var screen_switch = 0.5625;
+  var screen_ratio = WIN_H / WIN_W;
+  var ratio_H = WIN_H / screen_switch;
+  var ratio_W = WIN_W * screen_switch;
+
+  if( screen_ratio > 0.8 ){
+    $('#video-background').css({
+      'height':'100%',
+      'width':ratio_H,
+      'margin-top':'0',
+      'margin-left': -ratio_H /2,
+      'left':'50%',
+      'top':'0'
+    });
+  }
+  else if ( screen_ratio > 0.487  ) {
+    ratio_W = ratio_W + 300;
+    ratio_H = ratio_W*16/9;
+    $('#video-background').css({
+      'width':ratio_H,
+      'height':ratio_W,
+      'margin-top': -ratio_W / 2,
+      'margin-left':-ratio_H /2,
+      'top':'50%',
+      'left':'50%'
+    });
+  }
+  else {
+    $('#video-background').css({
+      'width':'100%',
+      'height':ratio_W,
+      'margin-top': -ratio_W / 2,
+      'margin-left':'0',
+      'top':'50%',
+      'left':'0'
+    });
+  }
+}
+
+WIN.resize(function () {
+  yt_screen_retio();
+});
+
+$(function(){
+  yt_screen_retio();
+});
+</script>
+</body>
+</html>
